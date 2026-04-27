@@ -211,7 +211,7 @@ public class TypingRace
 
         multiplePrint('=', passageLength + 3);
         System.out.println();
-        System.out.println("  [zz] = burnt out    [<] = just mistyped");
+        System.out.println("  [~] = burnt out    [<] = just mistyped");
     }
 
     /**
@@ -221,8 +221,6 @@ public class TypingRace
      *   |          ⌨           | TURBOFINGERS (Accuracy: 0.85)
      *   |    [zz]              | HUNT_N_PECK  (Accuracy: 0.40) BURNT OUT (2 turns)
      *
-     * Note: Ty forgot to show when a typist has just mistyped. That would
-     * be a nice improvement — perhaps a [<] marker after their symbol.
      *
      * @param theTypist the typist whose lane to print
      */
@@ -236,11 +234,14 @@ public class TypingRace
 
         // Always show the typist's symbol so they can be identified on screen.
         // Append ~ when burnt out so the state is visible without hiding identity.
+        // Append [<] when they just mistyped
         System.out.print(theTypist.getSymbol());
-        if (theTypist.isBurntOut())
-        {
+        if (theTypist.isBurntOut()) {
             System.out.print('~');
             spacesAfter--; // symbol + ~ together take two characters
+        } else if (theTypist.justMistyped()) {
+            System.out.print("<");
+            spacesAfter--; // symbol + < together take two characters
         }
 
         multiplePrint(' ', spacesAfter);
@@ -253,6 +254,11 @@ public class TypingRace
             System.out.print(theTypist.getName()
                 + " (Accuracy: " + theTypist.getAccuracy() + ")"
                 + " BURNT OUT (" + theTypist.getBurnoutTurnsRemaining() + " turns)");
+        } else if (theTypist.justMistyped())
+        {
+            System.out.print(theTypist.getName()
+                + " (Accuracy: " + theTypist.getAccuracy() + ")"
+                + " JUST MISTYPED");
         }
         else
         {
