@@ -83,10 +83,14 @@ public class TypingRace
         boolean finished = false;
 
         // Reset all typists to the start of the passage
-        // (Ty was in a hurry here)
         seat1Typist.resetToStart();
         seat2Typist.resetToStart();
         seat3Typist.resetToStart();
+
+        // Store original accuracies before the race begins
+        double seat1OriginalAccuracy = seat1Typist.getAccuracy();
+        double seat2OriginalAccuracy = seat2Typist.getAccuracy();
+        double seat3OriginalAccuracy = seat3Typist.getAccuracy();
 
         while (!finished)
         {
@@ -110,7 +114,25 @@ public class TypingRace
             } catch (Exception e) {}
         }
 
-        // TODO (Task 2a): Print the winner's name here
+        // Displays the winner and their final accuracy compared to their original accuracy
+
+        Typist winner;
+        double originalAccuracy;
+        
+        if (raceFinishedBy(seat1Typist)) {
+            winner = seat1Typist;
+            originalAccuracy = seat1OriginalAccuracy;
+        } else if (raceFinishedBy(seat2Typist)) {
+            winner = seat2Typist;
+            originalAccuracy = seat2OriginalAccuracy;
+        } else {
+            winner = seat3Typist;
+            originalAccuracy = seat3OriginalAccuracy;
+        }
+
+        System.out.println("And the winner is... " + winner.getName() + "!");
+        System.out.println("Final accuracy: " + winner.getAccuracy() + "(improved from " + originalAccuracy + ")");
+
     }
 
     /**
