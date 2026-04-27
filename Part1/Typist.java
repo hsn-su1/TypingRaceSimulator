@@ -23,6 +23,7 @@ public class Typist
     private boolean isBurntOut;
     private int burnoutTurnsRemaining;
     private double accuracy;
+    private boolean justMistyped;
 
 
     // Constructor of class Typist
@@ -35,6 +36,7 @@ public class Typist
         progress = 0;
         isBurntOut = false;
         burnoutTurnsRemaining = 0;
+        justMistyped = false;
     }
 
 
@@ -138,6 +140,7 @@ public class Typist
         progress = 0;
         burnoutTurnsRemaining = 0;
         isBurntOut = false;
+        justMistyped = false;
     }
 
     /**
@@ -149,6 +152,28 @@ public class Typist
     public boolean isBurntOut()
     {
         return isBurntOut;
+    }
+
+    /**
+     * Returns true if this typist just mistyped on their last turn, false otherwise.
+     *
+     * @return true if just mistyped
+     */
+
+    public boolean justMistyped()
+    {
+        return justMistyped;
+    }
+
+    /**
+     * Clears the mistype flag, typically called at the start of each turn.
+     * This allows the display to only show the mistype indicator for the turn
+     * in which the mistype occurred.
+     */
+
+    public void clearMistypeFlag()
+    {
+        justMistyped = false;
     }
 
     /**
@@ -176,6 +201,7 @@ public class Typist
         if (progress < 0) {
             progress = 0;
         }
+        justMistyped = true;
     }
 
     /**

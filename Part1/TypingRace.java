@@ -1,5 +1,4 @@
 import java.util.concurrent.TimeUnit;
-import java.lang.Math;
 
 /**
  * A typing race simulation. Three typists race to complete a passage of text,
@@ -148,6 +147,9 @@ public class TypingRace
 
     private void advanceTypist(Typist theTypist)
     {
+        // Clear the mistype flag from the previous turn
+        theTypist.clearMistypeFlag();
+
         if (theTypist.isBurntOut())
         {
             // Recovering from burnout — skip this turn
