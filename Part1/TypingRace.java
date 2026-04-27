@@ -126,8 +126,11 @@ public class TypingRace
             originalAccuracy = seat3OriginalAccuracy;
         }
 
+        // Winning slightly increases accuracy
+        winner.setAccuracy(winner.getAccuracy() + 0.02);
+
         System.out.println("And the winner is... " + winner.getName() + "!");
-        System.out.println("Final accuracy: " + winner.getAccuracy() + " (improved from " + originalAccuracy + ")");
+        System.out.println("Final accuracy: " + winner.getAccuracy() + " (changed from " + originalAccuracy + ")");
 
     }
 
@@ -174,6 +177,7 @@ public class TypingRace
         if (Math.random() < 0.05 * theTypist.getAccuracy() * theTypist.getAccuracy())
         {
             theTypist.burnOut(BURNOUT_DURATION);
+            theTypist.setAccuracy(theTypist.getAccuracy() - 0.02); // Burnout causes a small accuracy drop
         }
     }
 
@@ -287,9 +291,9 @@ public class TypingRace
 
     public static void main(String[] args) {
         TypingRace race = new TypingRace(40);
-        race.addTypist(new Typist('①', "TURBOFINGERS", 0.85), 1);
-        race.addTypist(new Typist('②', "QWERTY_QUEEN",  0.60), 2);
-        race.addTypist(new Typist('③', "HUNT_N_PECK",   0.30), 3);
+        race.addTypist(new Typist('A', "TURBOFINGERS", 0.85), 1);
+        race.addTypist(new Typist('B', "QWERTY_QUEEN",  0.60), 2);
+        race.addTypist(new Typist('C', "HUNT_N_PECK",   0.30), 3);
         race.startRace();
     }
 

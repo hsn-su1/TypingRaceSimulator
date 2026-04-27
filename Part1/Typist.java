@@ -218,7 +218,7 @@ public class Typist
         } else if (newAccuracy > 1.0) {
             accuracy = 1.0;
         } else {
-            accuracy = newAccuracy;
+            accuracy = Math.round(newAccuracy * 100.0) / 100.0;
         }
     }
 
