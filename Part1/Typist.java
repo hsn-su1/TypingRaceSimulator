@@ -10,7 +10,7 @@
  * Accuracy adjusts slightly — goes up after winning, down after burning out
  * 
  * @author Hasan Aliakbar Suleman
- * @version 27-04-2026
+ * @version 1 : 27-04-2026
  */
 
 public class Typist
@@ -58,6 +58,7 @@ public class Typist
      * When the counter reaches zero, the typist recovers automatically.
      * Has no effect if the typist is not currently burnt out.
      */
+    
     public void recoverFromBurnout()
     {
         if (isBurntOut) {
