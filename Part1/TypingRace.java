@@ -4,10 +4,6 @@ import java.util.concurrent.TimeUnit;
  * A typing race simulation. Three typists race to complete a passage of text,
  * advancing character by character — or sliding backwards when they mistype.
  *
- * Originally written by Ty Posaurus, who left this project to "focus on his
- * two-finger technique". He assured us the code was "basically done".
- * We have found evidence to the contrary.
- *
  * @author TyPosaurus
  * @version 1.0
  */
@@ -20,10 +16,9 @@ public class TypingRace
     private Typist seat3Typist;
 
     // Accuracy thresholds for mistype and burnout events
-    // (Ty tuned these values "by feel". They may need adjustment.)
-    private static final double MISTYPE_BASE_CHANCE = 0.3;
-    private static final int    SLIDE_BACK_AMOUNT   = 2;
-    private static final int    BURNOUT_DURATION     = 3;
+    private static final double MISTYPE_BASE_CHANCE = 0.15;
+    private static final int    SLIDE_BACK_AMOUNT   = 1;
+    private static final int    BURNOUT_DURATION     = 2;
 
     /**
      * Constructor for objects of class TypingRace.
@@ -174,10 +169,10 @@ public class TypingRace
 
         // Burnout check — pushing too hard increases burnout risk
         // (probability scales with accuracy squared, capped at ~0.05)
-        if (Math.random() < 0.05 * theTypist.getAccuracy() * theTypist.getAccuracy())
+        if (Math.random() < 0.02 * theTypist.getAccuracy() * theTypist.getAccuracy())
         {
             theTypist.burnOut(BURNOUT_DURATION);
-            theTypist.setAccuracy(theTypist.getAccuracy() - 0.02); // Burnout causes a small accuracy drop
+            theTypist.setAccuracy(theTypist.getAccuracy() - 0.01); // Burnout causes a small accuracy drop
         }
     }
 
@@ -202,7 +197,7 @@ public class TypingRace
     {
         System.out.print('\u000C'); // Clear terminal
 
-        System.out.println("  TYPING RACE — passage length: " + passageLength + " chars");
+        System.out.println("  TYPING RACE - passage length: " + passageLength + " chars");
         multiplePrint('=', passageLength + 3);
         System.out.println();
 
