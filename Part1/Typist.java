@@ -1,38 +1,40 @@
 /**
- * Write a description of class Typist here.
- *
- * Starter code generously abandoned by Ty Posaurus, your predecessor,
- * who typed with two fingers and considered that "good enough".
- * He left a sticky note: "the slide-back thing is optional probably".
- * It is not optional. Good luck.
- *
- * @author (your name)
- * @version (a version number or a date)
+ * The Typist class represents individual competitors in the race.
+ * 
+ * Each one has :
+ * 
+ * A name and a unique symbol (like ①, ②, ③) to identify them
+ * An accuracy rating (0 to 1) — higher = faster but more likely to burn out
+ * Progress that goes forward on correct keystrokes and backward on mistakes (never below zero)
+ * A burnout state — they freeze for a few turns then recover
+ * Accuracy adjusts slightly — goes up after winning, down after burning out
+ * 
+ * @author Hasan Aliakbar Suleman
+ * @version 27-04-2026
  */
+
 public class Typist
 {
-    // Fields of class Typist
-    // Hint: you will need six fields. Think carefully about their types.
-    // One of them tracks how far along the passage the typist has reached.
-    // Another tracks whether the typist is currently burnt out.
-    // A third tracks HOW MANY turns of burnout remain (not just whether they are burnt out).
-    // The remaining three should be fairly obvious.
+    // Instance variables of class Typist
 
-
+    private String name;
+    private char symbol;
+    private int progress;
+    private boolean isBurntOut;
+    private int burnoutTurnsRemaining;
+    private double accuracy;
 
 
     // Constructor of class Typist
-    /**
-     * Constructor for objects of class Typist.
-     * Creates a new typist with a given symbol, name, and accuracy rating.
-     *
-     * @param typistSymbol  a single Unicode character representing this typist (e.g. '①', '②', '③')
-     * @param typistName    the name of the typist (e.g. "TURBOFINGERS")
-     * @param typistAccuracy the typist's accuracy rating, between 0.0 and 1.0
-     */
+ 
     public Typist(char typistSymbol, String typistName, double typistAccuracy)
     {
-
+        symbol = typistSymbol;
+        name = typistName;
+        accuracy = typistAccuracy;
+        progress = 0;
+        isBurntOut = false;
+        burnoutTurnsRemaining = 0;
     }
 
 
@@ -44,9 +46,11 @@ public class Typist
      *
      * @param turns the number of turns the burnout will last
      */
+
     public void burnOut(int turns)
     {
-
+        isBurntOut = true;
+        burnoutTurnsRemaining = turns;
     }
 
     /**
@@ -56,7 +60,13 @@ public class Typist
      */
     public void recoverFromBurnout()
     {
-
+        if (isBurntOut) {
+            if (burnoutTurnsRemaining > 0) {
+                burnoutTurnsRemaining--;
+            } else {
+                isBurntOut = false;
+            }
+        }
     }
 
     /**
@@ -64,9 +74,10 @@ public class Typist
      *
      * @return accuracy as a double between 0.0 and 1.0
      */
+
     public double getAccuracy()
     {
-        return 0.0; // placeholder - replace with correct implementation
+        return accuracy; 
     }
 
     /**
@@ -76,9 +87,10 @@ public class Typist
      *
      * @return progress as a non-negative integer
      */
+    
     public int getProgress()
     {
-        return 0; // placeholder - replace with correct implementation
+        return progress;
     }
 
     /**
@@ -86,9 +98,10 @@ public class Typist
      *
      * @return the typist's name as a String
      */
+
     public String getName()
     {
-        return ""; // placeholder - replace with correct implementation
+        return name;
     }
 
     /**
@@ -96,9 +109,10 @@ public class Typist
      *
      * @return the typist's symbol as a char
      */
+
     public char getSymbol()
     {
-        return ' '; // placeholder - replace with correct implementation
+        return symbol;
     }
 
     /**
@@ -107,18 +121,22 @@ public class Typist
      *
      * @return burnout turns remaining as a non-negative integer
      */
+
     public int getBurnoutTurnsRemaining()
     {
-        return 0; // placeholder - replace with correct implementation
+        return burnoutTurnsRemaining;
     }
 
     /**
      * Resets the typist to their initial state, ready for a new race.
      * Progress returns to zero, burnout is cleared entirely.
      */
+
     public void resetToStart()
     {
-
+        progress = 0;
+        burnoutTurnsRemaining = 0;
+        isBurntOut = false;
     }
 
     /**
@@ -126,18 +144,22 @@ public class Typist
      *
      * @return true if burnt out
      */
+
     public boolean isBurntOut()
     {
-        return false; // placeholder - replace with correct implementation
+        return isBurntOut;
     }
 
     /**
      * Advances the typist forward by one character along the passage.
      * Should only be called when the typist is not burnt out.
      */
+
     public void typeCharacter()
     {
-
+        if (!isBurntOut) {
+            progress++;
+        }
     }
 
     /**
@@ -146,9 +168,13 @@ public class Typist
      *
      * @param amount the number of characters to slide back (must be positive)
      */
+
     public void slideBack(int amount)
     {
-
+        progress -= amount;
+        if (progress < 0) {
+            progress = 0;
+        }
     }
 
     /**
@@ -157,9 +183,16 @@ public class Typist
      *
      * @param newAccuracy the new accuracy rating
      */
+
     public void setAccuracy(double newAccuracy)
     {
-
+        if (newAccuracy < 0.0) {
+            accuracy = 0.0;
+        } else if (newAccuracy > 1.0) {
+            accuracy = 1.0;
+        } else {
+            accuracy = newAccuracy;
+        }
     }
 
     /**
@@ -167,9 +200,10 @@ public class Typist
      *
      * @param newSymbol the new symbol character
      */
+
     public void setSymbol(char newSymbol)
     {
-
+        symbol = newSymbol;
     }
 
 }
