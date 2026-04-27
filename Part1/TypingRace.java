@@ -127,7 +127,7 @@ public class TypingRace
         }
 
         System.out.println("And the winner is... " + winner.getName() + "!");
-        System.out.println("Final accuracy: " + winner.getAccuracy() + "(improved from " + originalAccuracy + ")");
+        System.out.println("Final accuracy: " + winner.getAccuracy() + " (improved from " + originalAccuracy + ")");
 
     }
 
@@ -258,7 +258,7 @@ public class TypingRace
                 + " BURNT OUT (" + theTypist.getBurnoutTurnsRemaining() + " turns)");
         } else if (theTypist.justMistyped())
         {
-            System.out.print(theTypist.getName()
+             System.out.print(theTypist.getName()
                 + " (Accuracy: " + theTypist.getAccuracy() + ")"
                 + " JUST MISTYPED");
         }
@@ -284,4 +284,14 @@ public class TypingRace
             i = i + 1;
         }
     }
+
+    public static void main(String[] args) {
+        TypingRace race = new TypingRace(40);
+        race.addTypist(new Typist('①', "TURBOFINGERS", 0.85), 1);
+        race.addTypist(new Typist('②', "QWERTY_QUEEN",  0.60), 2);
+        race.addTypist(new Typist('③', "HUNT_N_PECK",   0.30), 3);
+        race.startRace();
+    }
+
 }
+
