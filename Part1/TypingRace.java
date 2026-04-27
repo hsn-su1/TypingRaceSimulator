@@ -73,9 +73,6 @@ public class TypingRace
      * Starts the typing race.
      * All typists are reset to the beginning, then the simulation runs
      * turn by turn until one typist completes the full passage.
-     *
-     * Note from Ty: "I didn't bother printing the winner at the end,
-     * you can probably figure that out yourself."
      */
 
     public void startRace()
@@ -148,6 +145,7 @@ public class TypingRace
      *
      * @param theTypist the typist to advance
      */
+
     private void advanceTypist(Typist theTypist)
     {
         if (theTypist.isBurntOut())
@@ -163,8 +161,8 @@ public class TypingRace
             theTypist.typeCharacter();
         }
 
-        // Mistype check — the probability should reflect the typist's accuracy
-        if (Math.random() < theTypist.getAccuracy() * MISTYPE_BASE_CHANCE)
+        // Mistype check — less accurate typists are more likely to mistype
+        if (Math.random() < (1 - theTypist.getAccuracy()) * MISTYPE_BASE_CHANCE)
         {
             theTypist.slideBack(SLIDE_BACK_AMOUNT);
         }
