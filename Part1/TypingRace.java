@@ -1,19 +1,18 @@
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A typing race simulation. Three typists race to complete a passage of text,
+ * A typing race simulation. Multiple typists (2-6) race to complete a passage of text,
  * advancing character by character — or sliding backwards when they mistype.
  *
  * @author TyPosaurus
- * @version 1.0
+ * @version 2.0 - Modified to support 2-6 typists
  */
 
 public class TypingRace
 {
     private int passageLength;   // Total characters in the passage to type
-    private Typist seat1Typist;
-    private Typist seat2Typist;
-    private Typist seat3Typist;
+    private ArrayList<Typist> typists;  // Dynamic list of typists
 
     // Accuracy thresholds for mistype and burnout events
     private static final double MISTYPE_BASE_CHANCE = 0.15;
@@ -22,45 +21,85 @@ public class TypingRace
 
     /**
      * Constructor for objects of class TypingRace.
-     * Sets up the race with a passage of the given length.
-     * Initially there are no typists seated.
+     * Sets up the race with a passage of the given length and seat count.
      *
      * @param passageLength the number of characters in the passage to type
+     * @param seatCount the number of typists (2-6)
      */
 
-    public TypingRace(int passageLength)
+    public TypingRace(int passageLength, int seatCount)
     {
         this.passageLength = passageLength;
-        seat1Typist = null;
-        seat2Typist = null;
-        seat3Typist = null;
+        this.typists = new ArrayList<>();
+        
+        // Validate and set seat count
+        if (seatCount < 2) seatCount = 2;
+        if (seatCount > 6) seatCount = 6;
+        
+        // Initialize seats with null placeholders
+        for (int i = 0; i < seatCount; i++) {
+            typists.add(null);
+        }
     }
 
     /**
-     * Seats a typist at the given seat number (1, 2, or 3).
+     * Deprecated constructor for backward compatibility (defaults to 3 seats).
+     *
+     * @param passageLength the number of characters in the passage to type
+     */
+    public TypingRace(int passageLength)
+    {
+        this(passageLength, 3);
+    }
+
+    /**
+     * Seats a typist at the given seat number (1-based index).
      *
      * @param theTypist  the typist to seat
-     * @param seatNumber the seat to place them in (1–3)
+     * @param seatNumber the seat to place them in (1 to seatCount)
      */
 
     public void addTypist(Typist theTypist, int seatNumber)
     {
-        if (seatNumber == 1)
-        {
-            seat1Typist = theTypist;
-        }
-        else if (seatNumber == 2)
-        {
-            seat2Typist = theTypist;
-        }
-        else if (seatNumber == 3)
-        {
-            seat3Typist = theTypist;
-        }
-        else
-        {
+        if (seatNumber >= 1 && seatNumber <= typists.size()) {
+            typists.set(seatNumber - 1, theTypist);
+        } else {
             System.out.println("Cannot seat typist at seat " + seatNumber + " — there is no such seat.");
         }
+    }
+
+    /**
+     * Returns the typist at a given seat number.
+     *
+     * @param seatNumber the seat number (1-based)
+     * @return the Typist at that seat, or null if empty
+     */
+    public Typist getTypist(int seatNumber)
+    {
+        if (seatNumber >= 1 && seatNumber <= typists.size()) {
+            return typists.get(seatNumber - 1);
+        }
+        return null;
+    }
+
+    /**
+     * Returns all typists in the race.
+     *
+     * @return ArrayList of all typists
+     */
+    public ArrayList<Typist> getTypists()
+    {
+        return typists;
+    }
+
+    /**
+     * Returns the number of seats in the race.
+     *
+     * @return seat count
+     */
+    public int getSeatCount()
+    {
+        return typists.size();
     }
 
     /**
@@ -71,32 +110,43 @@ public class TypingRace
 
     public void startRace()
     {
+        // Validate all seats are filled
+        for (int i = 0; i < typists.size(); i++) {
+            if (typists.get(i) == null) {
+                System.err.println("Error: Not all seats are filled!");
+                return;
+            }
+        }
+
         boolean finished = false;
 
         // Reset all typists to the start of the passage
-        seat1Typist.resetToStart();
-        seat2Typist.resetToStart();
-        seat3Typist.resetToStart();
+        for (Typist t : typists) {
+            t.resetToStart();
+        }
 
         // Store original accuracies before the race begins
-        double seat1OriginalAccuracy = seat1Typist.getAccuracy();
-        double seat2OriginalAccuracy = seat2Typist.getAccuracy();
-        double seat3OriginalAccuracy = seat3Typist.getAccuracy();
+        double[] originalAccuracies = new double[typists.size()];
+        for (int i = 0; i < typists.size(); i++) {
+            originalAccuracies[i] = typists.get(i).getAccuracy();
+        }
 
         while (!finished)
         {
             // Advance each typist by one turn
-            advanceTypist(seat1Typist);
-            advanceTypist(seat2Typist);
-            advanceTypist(seat3Typist);
+            for (Typist t : typists) {
+                advanceTypist(t);
+            }
 
             // Print the current state of the race
             printRace();
 
             // Check if any typist has finished the passage
-            if ( raceFinishedBy(seat1Typist) || raceFinishedBy(seat2Typist) || raceFinishedBy(seat3Typist) )
-            {
-                finished = true;
+            for (Typist t : typists) {
+                if (raceFinishedBy(t)) {
+                    finished = true;
+                    break;
+                }
             }
 
             // Wait 200ms between turns so the animation is visible
@@ -105,28 +155,25 @@ public class TypingRace
             } catch (Exception e) {}
         }
 
-        // Displays the winner and their final accuracy compared to their original accuracy
-
-        Typist winner;
-        double originalAccuracy;
+        // Find the winner and display results
+        Typist winner = null;
+        double originalAccuracy = 0;
         
-        if (raceFinishedBy(seat1Typist)) {
-            winner = seat1Typist;
-            originalAccuracy = seat1OriginalAccuracy;
-        } else if (raceFinishedBy(seat2Typist)) {
-            winner = seat2Typist;
-            originalAccuracy = seat2OriginalAccuracy;
-        } else {
-            winner = seat3Typist;
-            originalAccuracy = seat3OriginalAccuracy;
+        for (int i = 0; i < typists.size(); i++) {
+            Typist t = typists.get(i);
+            if (raceFinishedBy(t)) {
+                winner = t;
+                originalAccuracy = originalAccuracies[i];
+                break;
+            }
         }
 
         // Winning slightly increases accuracy
-        winner.setAccuracy(winner.getAccuracy() + 0.02);
-
-        System.out.println("And the winner is... " + winner.getName() + "!");
-        System.out.println("Final accuracy: " + winner.getAccuracy() + " (changed from " + originalAccuracy + ")");
-
+        if (winner != null) {
+            winner.setAccuracy(winner.getAccuracy() + 0.01);
+            System.out.println("And the winner is... " + winner.getName() + "!");
+            System.out.println("Final accuracy: " + winner.getAccuracy() + " (changed from " + originalAccuracy + ")");
+        }
     }
 
     /**
@@ -201,14 +248,10 @@ public class TypingRace
         multiplePrint('=', passageLength + 3);
         System.out.println();
 
-        printSeat(seat1Typist);
-        System.out.println();
-
-        printSeat(seat2Typist);
-        System.out.println();
-
-        printSeat(seat3Typist);
-        System.out.println();
+        for (Typist t : typists) {
+            printSeat(t);
+            System.out.println();
+        }
 
         multiplePrint('=', passageLength + 3);
         System.out.println();
