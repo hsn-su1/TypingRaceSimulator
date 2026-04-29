@@ -1,6 +1,6 @@
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import javax.swing.*;
 
 /**
  * GUI panel for displaying the visual typing race.
@@ -94,18 +94,30 @@ public class RacePanel extends JPanel
 
         int progress = typist.getProgress();
 
+        // Get custom color from customization if available
+        Color progressColor = new Color(76, 175, 80);  // Default green
+        Color cursorColor = new Color(33, 150, 243);   // Default blue
+        if (typist.getCustomization() != null) {
+            progressColor = typist.getCustomization().getBarColor();
+            // Create a darker version for cursor
+            int r = Math.max(progressColor.getRed() - 50, 0);
+            int g = Math.max(progressColor.getGreen() - 50, 0);
+            int b = Math.max(progressColor.getBlue() - 50, 0);
+            cursorColor = new Color(r, g, b);
+        }
+
         for (int i = 0; i < passage.length(); i++) {
             char c = passage.charAt(i);
 
-            // Completed characters in green
+            // Completed characters in custom color
             if (i < progress) {
-                g2.setColor(new Color(76, 175, 80));  // Green
+                g2.setColor(progressColor);
                 g2.fillRect(textX, textY - 12, CHAR_WIDTH, 16);
                 g2.setColor(Color.WHITE);
             }
-            // Current character (cursor) in blue
+            // Current character (cursor) in darker version of color
             else if (i == progress) {
-                g2.setColor(new Color(33, 150, 243));  // Blue
+                g2.setColor(cursorColor);
                 g2.fillRect(textX, textY - 12, CHAR_WIDTH, 16);
                 g2.setColor(Color.WHITE);
             }
@@ -118,7 +130,7 @@ public class RacePanel extends JPanel
             textX += CHAR_WIDTH;
         }
 
-        // Draw typist info below lane
+        // Draw typist info below lane with custom symbol
         g2.setFont(new Font("Arial", Font.PLAIN, 10));
         g2.setColor(Color.BLACK);
 

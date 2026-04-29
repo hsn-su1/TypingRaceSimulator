@@ -1,10 +1,13 @@
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Stores the configuration for a typing race.
- * Includes passage selection, seat count, and difficulty modifiers.
+ * Includes passage selection, seat count, difficulty modifiers, and typist customizations.
  * Used by Part II GUI to pass settings to Part I's TypingRace.
  * 
  * @author Hasan Aliakbar Suleman
- * @version 1 : 29-04-2026
+ * @version 2 : 29-04-2026
  */
 
 public class RaceConfiguration
@@ -16,6 +19,9 @@ public class RaceConfiguration
     private boolean autocorrectEnabled;
     private boolean caffeineMode;
     private boolean nightShift;
+    
+    // Typist customizations (indexed by typist number 0-5)
+    private Map<Integer, TypistCustomization> typistCustomizations;
 
     /**
      * Constructor for RaceConfiguration with default settings.
@@ -27,6 +33,7 @@ public class RaceConfiguration
         this.autocorrectEnabled = false;
         this.caffeineMode = false;
         this.nightShift = false;
+        this.typistCustomizations = new HashMap<>();
     }
 
     /**
@@ -132,5 +139,54 @@ public class RaceConfiguration
     public boolean isNightShift()
     {
         return nightShift;
+    }
+
+    /**
+     * Sets the customization for a specific typist.
+     *
+     * @param typistNumber the typist index (0-5)
+     * @param customization the TypistCustomization
+     */
+    public void setTypistCustomization(int typistNumber, TypistCustomization customization)
+    {
+        if (typistNumber >= 0 && typistNumber < 6 && customization != null) {
+            typistCustomizations.put(typistNumber, customization);
+        }
+    }
+
+    /**
+     * Gets the customization for a specific typist.
+     * Returns a default customization if not set.
+     *
+     * @param typistNumber the typist index (0-5)
+     * @return the TypistCustomization
+     */
+    public TypistCustomization getTypistCustomization(int typistNumber)
+    {
+        if (typistNumber >= 0 && typistNumber < 6) {
+            TypistCustomization custom = typistCustomizations.get(typistNumber);
+            if (custom != null) {
+                return custom;
+            }
+        }
+        return new TypistCustomization();  // Default customization
+    }
+
+    /**
+     * Gets all typist customizations.
+     *
+     * @return map of typist customizations
+     */
+    public Map<Integer, TypistCustomization> getAllTypistCustomizations()
+    {
+        return new HashMap<>(typistCustomizations);
+    }
+
+    /**
+     * Clears all typist customizations.
+     */
+    public void clearCustomizations()
+    {
+        typistCustomizations.clear();
     }
 }

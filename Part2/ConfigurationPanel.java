@@ -20,7 +20,9 @@ public class ConfigurationPanel extends JPanel
     private JCheckBox caffeineCheckbox;
     private JCheckBox nightShiftCheckbox;
     private JButton startButton;
+    private JButton customizeButton;
     private RaceConfiguration config;
+    private TypistCustomizationPanel[] customizationPanels;
 
     /**
      * Constructor for ConfigurationPanel.
@@ -203,8 +205,16 @@ public class ConfigurationPanel extends JPanel
      */
     private JPanel createButtonPanel()
     {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         panel.setBackground(new Color(240, 240, 240));
+
+        customizeButton = new JButton("Customize Typists");
+        customizeButton.setFont(new Font("Arial", Font.BOLD, 12));
+        customizeButton.setPreferredSize(new Dimension(150, 40));
+        customizeButton.setBackground(new Color(156, 39, 176));
+        customizeButton.setForeground(Color.WHITE);
+        customizeButton.addActionListener(e -> showCustomizationDialog());
+        panel.add(customizeButton);
 
         startButton = new JButton("Start Race");
         startButton.setFont(new Font("Arial", Font.BOLD, 14));
@@ -256,5 +266,60 @@ public class ConfigurationPanel extends JPanel
             return false;
         }
         return true;
+    }
+
+    /**
+     * Shows typist customization dialog.
+     */
+    private void showCustomizationDialog()
+    {
+        int seatCount = (Integer) seatCountSpinner.getValue();
+        
+        JDialog dialog = new JDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(this), 
+                                      "Customize Typists", true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setSize(600, 100 + seatCount * 250);
+        dialog.setLocationRelativeTo(this);
+
+        // Main scrollable panel
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(new Color(240, 240, 240));
+
+        // Create customization panels for each typist
+        customizationPanels = new TypistCustomizationPanel[seatCount];
+        for (int i = 0; i < seatCount; i++) {
+            customizationPanels[i] = new TypistCustomizationPanel(i + 1);
+            mainPanel.add(customizationPanels[i]);
+            mainPanel.add(Box.createVerticalStrut(10));
+        }
+
+        JScrollPane scrollPane = new JScrollPane(mainPanel);
+        dialog.add(scrollPane, BorderLayout.CENTER);
+
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        buttonPanel.setBackground(new Color(240, 240, 240));
+
+        JButton saveButton = new JButton("Save Customizations");
+        saveButton.setFont(new Font("Arial", Font.BOLD, 12));
+        saveButton.addActionListener(e -> {
+            // Save all customizations to config
+            for (int i = 0; i < customizationPanels.length; i++) {
+                config.setTypistCustomization(i, customizationPanels[i].getCustomization());
+            }
+            JOptionPane.showMessageDialog(dialog, "Customizations saved!", 
+                                        "Success", JOptionPane.INFORMATION_MESSAGE);
+            dialog.dispose();
+        });
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
     }
 }

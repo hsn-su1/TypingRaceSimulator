@@ -187,6 +187,8 @@ public class TypingRace
      *   - They may burn out — more likely for very high-accuracy typists
      *     who are pushing themselves too hard.
      *
+     * Also applies customization modifiers from typing style, keyboard, and accessories.
+     *
      * @param theTypist the typist to advance
      */
 
@@ -202,23 +204,41 @@ public class TypingRace
             return;
         }
 
-        // Attempt to type a character
-        if (Math.random() < theTypist.getAccuracy())
-        {
-            theTypist.typeCharacter();
+        // Get customization modifiers
+        double speedMod = theTypist.getSpeedModifier();
+        double mistypeMod = theTypist.getMistypeRateModifier();
+        double energyMod = theTypist.getEnergyDrinkModifier(passageLength);
+        
+        // Calculate effective accuracy with all modifiers
+        double effectiveAccuracy = theTypist.getAccuracy() * energyMod;
+
+        // Apply speed modifier — faster keyboards/styles advance more
+        int charsToAdvance = (int) Math.round(speedMod);
+        for (int i = 0; i < charsToAdvance; i++) {
+            // Attempt to type a character
+            if (Math.random() < effectiveAccuracy)
+            {
+                theTypist.typeCharacter();
+            }
         }
 
         // Mistype check — less accurate typists are more likely to mistype
-        if (Math.random() < (1 - theTypist.getAccuracy()) * MISTYPE_BASE_CHANCE)
+        // Apply mistype modifier from keyboard and accessories
+        double mistypeChance = (1 - effectiveAccuracy) * MISTYPE_BASE_CHANCE * mistypeMod;
+        if (Math.random() < mistypeChance)
         {
             theTypist.slideBack(SLIDE_BACK_AMOUNT);
         }
 
         // Burnout check — pushing too hard increases burnout risk
-        // (probability scales with accuracy squared, capped at ~0.05)
-        if (Math.random() < 0.02 * theTypist.getAccuracy() * theTypist.getAccuracy())
+        // Apply burnout duration modifier from accessories
+        if (Math.random() < 0.02 * effectiveAccuracy * effectiveAccuracy)
         {
-            theTypist.burnOut(BURNOUT_DURATION);
+            double burnoutMod = theTypist.getBurnoutModifier();
+            int adjustedBurnout = (int) Math.round(BURNOUT_DURATION * burnoutMod);
+            if (adjustedBurnout < 1) adjustedBurnout = 1;  // At least 1 turn
+            
+            theTypist.burnOut(adjustedBurnout);
             theTypist.setAccuracy(theTypist.getAccuracy() - 0.01); // Burnout causes a small accuracy drop
         }
     }

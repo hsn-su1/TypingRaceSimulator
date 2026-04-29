@@ -81,6 +81,9 @@ public class TypingRaceGUI extends JFrame
         cardPanel.add(racePanel, "race");
         cardLayout.show(cardPanel, "race");
 
+        // Display customization info for each typist
+        displayCustomizationInfo(typists);
+
         // STEP 5: Run Part I's TypingRace on background thread
         SwingWorker<Typist, Void> worker = new SwingWorker<Typist, Void>()
         {
@@ -158,7 +161,7 @@ public class TypingRaceGUI extends JFrame
             String name = names[i % names.length];
             double accuracy = baseAccuracies[i % baseAccuracies.length];
 
-            // Apply modifiers
+            // Apply difficulty modifiers
             if (config.isNightShift()) {
                 accuracy *= 0.9;  // 10% reduction
             }
@@ -167,8 +170,18 @@ public class TypingRaceGUI extends JFrame
                 accuracy *= 1.15;  // 15% boost (but may cause burnout)
             }
 
-            // Create Part I Typist object
-            Typist typist = new Typist(symbol, name, accuracy);
+            // Get customization for this typist
+            TypistCustomization customization = config.getTypistCustomization(i);
+            
+            // If customization exists, override symbol and apply style modifiers
+            if (customization != null) {
+                symbol = customization.getSymbol();
+                // Apply typing style modifier to accuracy
+                accuracy *= customization.getTypingStyle().getAccuracyModifier();
+            }
+
+            // Create Part I Typist object with customization
+            Typist typist = new Typist(symbol, name, accuracy, customization);
             typists.add(typist);
         }
 
@@ -197,6 +210,42 @@ public class TypingRaceGUI extends JFrame
             configPanel.addStartButtonListener(e -> startRace());
             cardPanel.add(configPanel, "config");
             cardLayout.show(cardPanel, "config");
+        }
+    }
+
+    /**
+     * Displays customization info for each typist in console.
+     *
+     * @param typists the list of Typist objects with customizations
+     */
+    private void displayCustomizationInfo(ArrayList<Typist> typists)
+    {
+        System.out.println("\n╔════════════════════════════════════════════════════════════════╗");
+        System.out.println("║              TYPIST CUSTOMIZATIONS AND ATTRIBUTES              ║");
+        System.out.println("╚════════════════════════════════════════════════════════════════╝\n");
+        
+        for (int i = 0; i < typists.size(); i++) {
+            Typist t = typists.get(i);
+            System.out.println("[Typist " + (i + 1) + "] " + t.getName() + " [" + t.getSymbol() + "]");
+            System.out.println("Base Accuracy: " + String.format("%.0f%%", t.getAccuracy() * 100));
+            
+            if (t.getCustomization() != null) {
+                TypistCustomization custom = t.getCustomization();
+                System.out.println("  • Typing Style: " + custom.getTypingStyle().getDisplayName());
+                System.out.println("    - " + custom.getTypingStyle().getDescription());
+                System.out.println("  • Keyboard: " + custom.getKeyboardType().getDisplayName());
+                System.out.println("    - " + custom.getKeyboardType().getDescription());
+                
+                if (!custom.getAccessories().isEmpty()) {
+                    System.out.println("  • Accessories:");
+                    for (Accessory acc : custom.getAccessories()) {
+                        System.out.println("    - " + acc.getDisplayName() + ": " + acc.getDescription());
+                    }
+                } else {
+                    System.out.println("  • Accessories: None");
+                }
+            }
+            System.out.println();
         }
     }
 
