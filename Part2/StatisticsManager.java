@@ -53,6 +53,28 @@ public class StatisticsManager {
     }
 
     /**
+     * Gets all typists sorted by cumulative points descending.
+     *
+     * @return sorted array of TypistStats
+     */
+    public TypistStats[] getLeaderboardByPoints() {
+        TypistStats[] leaderboard = typistStats.values().toArray(new TypistStats[0]);
+        java.util.Arrays.sort(leaderboard, (a, b) -> Integer.compare(b.getCumulativePoints(), a.getCumulativePoints()));
+        return leaderboard;
+    }
+
+    /**
+     * Gets all typists sorted by total earnings descending.
+     *
+     * @return sorted array of TypistStats
+     */
+    public TypistStats[] getLeaderboardByEarnings() {
+        TypistStats[] leaderboard = typistStats.values().toArray(new TypistStats[0]);
+        java.util.Arrays.sort(leaderboard, (a, b) -> Double.compare(b.getTotalEarnings(), a.getTotalEarnings()));
+        return leaderboard;
+    }
+
+    /**
      * Saves all stats to file.
      */
     private void saveStats() {

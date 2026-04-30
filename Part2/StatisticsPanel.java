@@ -37,7 +37,7 @@ public class StatisticsPanel extends JPanel {
         updateTypistSelector();
 
         metricSelector = new JComboBox<>(new String[]{
-            "Overview", "Detailed Stats", "Race History", "WPM Trend"
+            "Overview", "Detailed Stats", "Race History", "WPM Trend", "Leaderboard"
         });
 
         viewStatsButton = new JButton("View Stats");
@@ -86,6 +86,14 @@ public class StatisticsPanel extends JPanel {
     }
 
     /**
+     * Refreshes the panel data after stats update.
+     */
+    public void refresh() {
+        updateTypistSelector();
+        showOverview();
+    }
+
+    /**
      * Views stats for the selected typist and metric.
      */
     private void viewStats() {
@@ -111,6 +119,12 @@ public class StatisticsPanel extends JPanel {
                 break;
             case "WPM Trend":
                 showWPMTrend(stats);
+                break;
+            case "Leaderboard":
+                showLeaderboard();
+                break;
+            default:
+                statsDisplay.setText("Unknown metric selected.");
                 break;
         }
     }
@@ -154,6 +168,69 @@ public class StatisticsPanel extends JPanel {
             }
         }
 
+        statsDisplay.setText(sb.toString());
+    }
+
+    /**
+     * Shows the leaderboard sorted by cumulative points.
+     */
+    private void showLeaderboard() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== LEADERBOARD (POINTS) ===\n\n");
+        TypistStats[] leaderboard = statsManager.getLeaderboardByPoints();
+        if (leaderboard.length == 0) {
+            sb.append("No data available yet.");
+        } else {
+            sb.append(String.format("%-20s %-8s %-10s %-12s\n", "Typist", "Points", "Earnings", "Wins"));
+            sb.append("------------------------------------------------\n");
+            for (TypistStats stats : leaderboard) {
+                sb.append(String.format("%-20s %-8d %-10.0f %-12d\n",
+                    stats.getTypistName(), stats.getCumulativePoints(), stats.getTotalEarnings(), stats.getWinCount()));
+            }
+        }
+        statsDisplay.setText(sb.toString());
+    }
+
+    /**
+     * Shows the earnings board sorted by total earnings.
+     */
+    private void showEarningsBoard() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== EARNINGS BOARD ===\n\n");
+        TypistStats[] leaderboard = statsManager.getLeaderboardByEarnings();
+        if (leaderboard.length == 0) {
+            sb.append("No earnings recorded yet.");
+        } else {
+            sb.append(String.format("%-20s %-12s %-12s %-12s\n", "Typist", "Earnings", "Available", "Upgrades"));
+            sb.append("------------------------------------------------\n");
+            for (TypistStats stats : leaderboard) {
+                sb.append(String.format("%-20s %-12.0f %-12.0f %-12s\n",
+                    stats.getTypistName(), stats.getTotalEarnings(), stats.getAvailableEarnings(),
+                    stats.getUpgrades().isEmpty() ? "None" : String.join(",", stats.getUpgrades())));
+            }
+        }
+        statsDisplay.setText(sb.toString());
+    }
+
+    /**
+     * Shows badges, titles, and upgrade status for a typist.
+     */
+    private void showTitlesAndUpgrades(TypistStats stats) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Titles & Upgrades for ").append(stats.getTypistName()).append("\n\n");
+        sb.append("Badges: ");
+        if (stats.getBadges().isEmpty()) {
+            sb.append("None\n");
+        } else {
+            sb.append(String.join(", ", stats.getBadges())).append("\n");
+        }
+        sb.append("Upgrades: ");
+        if (stats.getUpgrades().isEmpty()) {
+            sb.append("None\n");
+        } else {
+            sb.append(String.join(", ", stats.getUpgrades())).append("\n");
+        }
+        sb.append("Available Earnings: ").append(String.format("%.0f coins\n", stats.getAvailableEarnings()));
         statsDisplay.setText(sb.toString());
     }
 

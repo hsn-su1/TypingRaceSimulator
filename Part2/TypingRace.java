@@ -213,13 +213,72 @@ public class TypingRace
             int burnoutCount = t.getBurnoutCount();
             double accuracyChange = t.getAccuracy() - originalAccuracies[typists.indexOf(t)];
 
+            // Base points and earnings
+            int basePoints = position > 0 ? Math.max(20, 120 - (position - 1) * 15) : 10;
+            int accuracyBonusPoints = (accuracyPercent >= 90.0) ? 20 : 0;
+            int consistencyBonusPoints = (burnoutCount == 0 && position > 0) ? 15 : 0;
+            int championBonusPoints = (position == 1) ? 30 : 0;
+            int totalPoints = basePoints + accuracyBonusPoints + consistencyBonusPoints + championBonusPoints;
+
+            double positionEarnings = position > 0 ? 60 + (sortedTypists.size() - position) * 10 : 15;
+            double performanceEarnings = Math.max(0, (wpm - 40.0)) * 0.6;
+            double accuracyEarnings = (accuracyPercent >= 90.0) ? 15 : 0;
+            double earnings = positionEarnings + performanceEarnings + accuracyEarnings;
+
+            Sponsor sponsor = t.getCustomization() != null ? t.getCustomization().getSponsor() : Sponsor.NONE;
+            String sponsorName = sponsor != null ? sponsor.getDisplayName() : Sponsor.NONE.getDisplayName();
+
+            RaceResult provisional = new RaceResult(t.getName(), position, wpm,
+                                                    accuracyPercent, burnoutCount,
+                                                    accuracyChange, timeTakenSeconds,
+                                                    totalPoints, earnings,
+                                                    sponsorName, 0.0, "");
+
+            double sponsorBonus = 0.0;
+            if (sponsor != null && sponsor != Sponsor.NONE && sponsor.bonusApplies(provisional)) {
+                sponsorBonus = sponsor.getBonusAmount();
+            }
+
+            earnings += sponsorBonus;
+            String titleEarned = determineTitle(position, accuracyPercent, burnoutCount, sponsorBonus);
+
             RaceResult result = new RaceResult(t.getName(), position, wpm,
                                              accuracyPercent, burnoutCount,
-                                             accuracyChange, timeTakenSeconds);
+                                             accuracyChange, timeTakenSeconds,
+                                             totalPoints, earnings,
+                                             sponsorName, sponsorBonus, titleEarned);
             results.add(result);
         }
 
         return results;
+    }
+
+    /**
+     * Determines the title awarded for the race result.
+     *
+     * @param position finishing position
+     * @param accuracyPercent accuracy percent achieved
+     * @param burnoutCount burnout count
+     * @param sponsorBonus sponsor bonus amount
+     * @return title string
+     */
+    private String determineTitle(int position, double accuracyPercent, int burnoutCount, double sponsorBonus) {
+        if (position == 1 && accuracyPercent >= 90.0) {
+            return "Champion Sharpshooter";
+        }
+        if (position == 1) {
+            return "Race Winner";
+        }
+        if (burnoutCount == 0 && position > 0) {
+            return "Steady Competitor";
+        }
+        if (accuracyPercent >= 85.0) {
+            return "Accuracy Ace";
+        }
+        if (sponsorBonus > 0) {
+            return "Sponsored Finisher";
+        }
+        return "Finishing Runner";
     }
 
     /**

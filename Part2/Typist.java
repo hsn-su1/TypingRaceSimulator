@@ -118,9 +118,9 @@ public class Typist
     public void recoverFromBurnout()
     {
         if (isBurntOut) {
-            if (burnoutTurnsRemaining > 0) {
-                burnoutTurnsRemaining--;
-            } else {
+            burnoutTurnsRemaining--;
+            if (burnoutTurnsRemaining <= 0) {
+                burnoutTurnsRemaining = 0;
                 isBurntOut = false;
             }
         }

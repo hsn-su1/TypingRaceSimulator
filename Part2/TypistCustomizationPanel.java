@@ -65,6 +65,10 @@ public class TypistCustomizationPanel extends JPanel
         panel.add(createAccessoriesPanel());
         panel.add(Box.createVerticalStrut(10));
 
+        // Sponsor
+        panel.add(createSponsorPanel());
+        panel.add(Box.createVerticalStrut(10));
+
         // Symbol & Color
         panel.add(createSymbolColorPanel());
 
@@ -161,6 +165,44 @@ public class TypistCustomizationPanel extends JPanel
     }
 
     /**
+     * Creates the sponsor selection panel.
+     *
+     * @return JPanel with sponsor dropdown
+     */
+    private JPanel createSponsorPanel()
+    {
+        JPanel panel = new JPanel(new BorderLayout(10, 5));
+        panel.setBackground(new Color(250, 250, 250));
+
+        JLabel label = new JLabel("Sponsor Deal:");
+        label.setFont(new Font("Arial", Font.BOLD, 11));
+
+        JComboBox<Sponsor> sponsorCombo = new JComboBox<>(Sponsor.values());
+        sponsorCombo.setSelectedItem(Sponsor.NONE);
+        sponsorCombo.addActionListener(e -> {
+            Sponsor selected = (Sponsor) sponsorCombo.getSelectedItem();
+            customization.setSponsor(selected);
+            updateEffectsArea();
+        });
+
+        JLabel sponsorDescLabel = new JLabel();
+        sponsorDescLabel.setFont(new Font("Arial", Font.ITALIC, 10));
+        sponsorDescLabel.setForeground(new Color(100, 100, 100));
+        updateSponsorDescription(sponsorDescLabel, Sponsor.NONE);
+
+        sponsorCombo.addActionListener(e -> {
+            Sponsor selected = (Sponsor) sponsorCombo.getSelectedItem();
+            updateSponsorDescription(sponsorDescLabel, selected);
+        });
+
+        panel.add(label, BorderLayout.WEST);
+        panel.add(sponsorCombo, BorderLayout.CENTER);
+        panel.add(sponsorDescLabel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+    /**
      * Updates the keyboard description label.
      * 
      * @param label the label to update
@@ -170,6 +212,19 @@ public class TypistCustomizationPanel extends JPanel
     {
         if (keyboard != null) {
             label.setText("  → " + keyboard.getDescription());
+        }
+    }
+
+    /**
+     * Updates the sponsor description label.
+     *
+     * @param label the label to update
+     * @param sponsor the selected Sponsor
+     */
+    private void updateSponsorDescription(JLabel label, Sponsor sponsor)
+    {
+        if (sponsor != null) {
+            label.setText("  → " + sponsor.getDescription());
         }
     }
 
@@ -351,7 +406,14 @@ public class TypistCustomizationPanel extends JPanel
                                    100.0));
         }
 
-        sb.append("\nACCESSORI ES APPLIED:\n");
+        Sponsor sponsor = customization.getSponsor();
+        if (sponsor != null && sponsor != Sponsor.NONE) {
+            sb.append("\nSPONSOR DEAL:\n");
+            sb.append("  ").append(sponsor.getDisplayName()).append(" - ")
+              .append(sponsor.getDescription()).append("\n");
+        }
+
+        sb.append("\nACCESSORIES APPLIED:\n");
         if (wristSupportCheckbox.isSelected() || 
             energyDrinkCheckbox.isSelected() || 
             headphonesCheckbox.isSelected()) {

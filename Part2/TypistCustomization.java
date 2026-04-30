@@ -17,6 +17,7 @@ public class TypistCustomization
     private char symbol;
     private Color barColor;
     private Set<Accessory> accessories;
+    private Sponsor sponsor;
 
     /**
      * Constructor with default customization.
@@ -29,6 +30,7 @@ public class TypistCustomization
         this.symbol = '●';
         this.barColor = Color.BLUE;
         this.accessories = new HashSet<>();
+        this.sponsor = Sponsor.NONE;
     }
 
     /**
@@ -46,6 +48,7 @@ public class TypistCustomization
         this.symbol = sym;
         this.barColor = color;
         this.accessories = new HashSet<>();
+        this.sponsor = Sponsor.NONE;
     }
 
     // Getters
@@ -88,6 +91,16 @@ public class TypistCustomization
     public Color getBarColor()
     {
         return barColor;
+    }
+
+    /**
+     * Gets the current sponsor.
+     *
+     * @return the Sponsor
+     */
+    public Sponsor getSponsor()
+    {
+        return sponsor;
     }
 
     /**
@@ -160,6 +173,18 @@ public class TypistCustomization
     }
 
     /**
+     * Sets the sponsor for this typist.
+     *
+     * @param sponsor the Sponsor
+     */
+    public void setSponsor(Sponsor sponsor)
+    {
+        if (sponsor != null) {
+            this.sponsor = sponsor;
+        }
+    }
+
+    /**
      * Equips an accessory.
      * 
      * @param accessory the accessory to equip
@@ -208,6 +233,10 @@ public class TypistCustomization
             }
             sb.setLength(sb.length() - 2);  // Remove trailing comma
             sb.append("\n");
+        }
+
+        if (sponsor != null && sponsor != Sponsor.NONE) {
+            sb.append("Sponsor: ").append(sponsor.getDisplayName()).append(" - ").append(sponsor.getDescription()).append("\n");
         }
         
         return sb.toString();

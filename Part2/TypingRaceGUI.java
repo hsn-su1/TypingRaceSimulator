@@ -124,6 +124,7 @@ public class TypingRaceGUI extends JFrame
                         for (RaceResult result : results) {
                             statsManager.addRaceResult(result.getTypistName(), result);
                         }
+                        statsPanel.refresh();
                         
                         // Find winner from results
                         RaceResult winnerResult = results.stream()
@@ -198,12 +199,24 @@ public class TypingRaceGUI extends JFrame
 
             // Get customization for this typist
             TypistCustomization customization = config.getTypistCustomization(i);
-            
+            if (customization == null) {
+                customization = new TypistCustomization();
+            }
+
+            // Apply earned upgrades from previous earnings before race
+            TypistStats existingStats = statsManager.getTypistStats(name);
+            existingStats.applyAvailableUpgrades(customization);
+
             // If customization exists, override symbol and apply style modifiers
             if (customization != null) {
                 symbol = customization.getSymbol();
-                // Apply typing style modifier to accuracy
                 accuracy *= customization.getTypingStyle().getAccuracyModifier();
+            }
+
+            // Apply champion pressure if this typist is top-ranked
+            TypistStats[] leaderboard = statsManager.getLeaderboardByPoints();
+            if (leaderboard.length > 0 && leaderboard[0].getTypistName().equals(name) && leaderboard[0].getTotalRaces() > 0) {
+                accuracy *= 0.95; // champions face higher expectations
             }
 
             // Create Part I Typist object with customization
