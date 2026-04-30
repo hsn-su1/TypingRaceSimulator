@@ -106,19 +106,23 @@ public class TypingRace
      * Starts the typing race.
      * All typists are reset to the beginning, then the simulation runs
      * turn by turn until one typist completes the full passage.
+     *
+     * @return ArrayList of RaceResult for each typist
      */
 
-    public void startRace()
+    public ArrayList<RaceResult> startRace()
     {
         // Validate all seats are filled
         for (int i = 0; i < typists.size(); i++) {
             if (typists.get(i) == null) {
                 System.err.println("Error: Not all seats are filled!");
-                return;
+                return new ArrayList<>();
             }
         }
 
         boolean finished = false;
+        long startTime = System.currentTimeMillis();
+        int turnCount = 0;
 
         // Reset all typists to the start of the passage
         for (Typist t : typists) {
@@ -133,6 +137,7 @@ public class TypingRace
 
         while (!finished)
         {
+            turnCount++;
             // Advance each typist by one turn
             for (Typist t : typists) {
                 advanceTypist(t);
@@ -155,15 +160,17 @@ public class TypingRace
             } catch (Exception e) {}
         }
 
+        long endTime = System.currentTimeMillis();
+        double timeTakenSeconds = (endTime - startTime) / 1000.0;
+
+        // Calculate results for each typist
+        ArrayList<RaceResult> results = calculateRaceResults(originalAccuracies, timeTakenSeconds);
+
         // Find the winner and display results
         Typist winner = null;
-        double originalAccuracy = 0;
-        
-        for (int i = 0; i < typists.size(); i++) {
-            Typist t = typists.get(i);
-            if (raceFinishedBy(t)) {
-                winner = t;
-                originalAccuracy = originalAccuracies[i];
+        for (RaceResult result : results) {
+            if (result.getPosition() == 1) {
+                winner = getTypistByName(result.getTypistName());
                 break;
             }
         }
@@ -172,8 +179,62 @@ public class TypingRace
         if (winner != null) {
             winner.setAccuracy(winner.getAccuracy() + 0.01);
             System.out.println("And the winner is... " + winner.getName() + "!");
-            System.out.println("Final accuracy: " + winner.getAccuracy() + " (changed from " + originalAccuracy + ")");
+            System.out.println("Final accuracy: " + winner.getAccuracy());
         }
+
+        return results;
+    }
+
+    /**
+     * Calculates race results for all typists.
+     *
+     * @param originalAccuracies the accuracies before the race
+     * @param timeTakenSeconds total time taken
+     * @return list of RaceResult objects
+     */
+    private ArrayList<RaceResult> calculateRaceResults(double[] originalAccuracies, double timeTakenSeconds) {
+        ArrayList<RaceResult> results = new ArrayList<>();
+
+        double timeInMinutes = timeTakenSeconds / 60.0;
+
+        // Sort typists by progress (descending) to determine positions
+        ArrayList<Typist> sortedTypists = new ArrayList<>(typists);
+        sortedTypists.sort((t1, t2) -> Integer.compare(t2.getProgress(), t1.getProgress()));
+
+        for (int i = 0; i < sortedTypists.size(); i++) {
+            Typist t = sortedTypists.get(i);
+            int position = (t.getProgress() >= passageLength) ? (i + 1) : 0; // 0 for DNF
+
+            // Calculate individual WPM based on actual progress
+            double wordsTyped = t.getProgress() / 5.0;
+            double wpm = timeInMinutes > 0 ? wordsTyped / timeInMinutes : 0.0;
+
+            double accuracyPercent = t.getRaceAccuracyPercentage();
+            int burnoutCount = t.getBurnoutCount();
+            double accuracyChange = t.getAccuracy() - originalAccuracies[typists.indexOf(t)];
+
+            RaceResult result = new RaceResult(t.getName(), position, wpm,
+                                             accuracyPercent, burnoutCount,
+                                             accuracyChange, timeTakenSeconds);
+            results.add(result);
+        }
+
+        return results;
+    }
+
+    /**
+     * Gets a typist by name.
+     *
+     * @param name the typist name
+     * @return the Typist object, or null if not found
+     */
+    private Typist getTypistByName(String name) {
+        for (Typist t : typists) {
+            if (t.getName().equals(name)) {
+                return t;
+            }
+        }
+        return null;
     }
 
     /**

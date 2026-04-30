@@ -35,6 +35,11 @@ public class Typist
     private TypistCustomization customization;
     private int raceProgress;  // Track position in passage for Energy Drink timing
 
+    // Statistics tracking for current race
+    private int totalKeystrokes;
+    private int correctKeystrokes;
+    private int burnoutCount;
+
 
     // Constructors of class Typist
  
@@ -57,6 +62,9 @@ public class Typist
         justMistyped = false;
         customization = new TypistCustomization();
         raceProgress = 0;
+        totalKeystrokes = 0;
+        correctKeystrokes = 0;
+        burnoutCount = 0;
     }
 
     /**
@@ -79,6 +87,9 @@ public class Typist
         justMistyped = false;
         customization = custom != null ? custom : new TypistCustomization();
         raceProgress = 0;
+        totalKeystrokes = 0;
+        correctKeystrokes = 0;
+        burnoutCount = 0;
     }
 
 
@@ -95,6 +106,7 @@ public class Typist
     {
         isBurntOut = true;
         burnoutTurnsRemaining = turns;
+        burnoutCount++;
     }
 
     /**
@@ -184,6 +196,9 @@ public class Typist
         isBurntOut = false;
         justMistyped = false;
         raceProgress = 0;
+        totalKeystrokes = 0;
+        correctKeystrokes = 0;
+        burnoutCount = 0;
     }
 
     /**
@@ -228,6 +243,8 @@ public class Typist
     {
         if (!isBurntOut) {
             progress++;
+            totalKeystrokes++;
+            correctKeystrokes++;
         }
     }
 
@@ -245,6 +262,7 @@ public class Typist
             progress = 0;
         }
         justMistyped = true;
+        totalKeystrokes++;
     }
 
     /**
@@ -396,6 +414,43 @@ public class Typist
     {
         if (customization == null) return "No customization";
         return customization.getSummary();
+    }
+
+    /**
+     * Gets the total keystrokes made in the current race.
+     *
+     * @return total keystrokes
+     */
+    public int getTotalKeystrokes() {
+        return totalKeystrokes;
+    }
+
+    /**
+     * Gets the correct keystrokes made in the current race.
+     *
+     * @return correct keystrokes
+     */
+    public int getCorrectKeystrokes() {
+        return correctKeystrokes;
+    }
+
+    /**
+     * Gets the burnout count in the current race.
+     *
+     * @return burnout count
+     */
+    public int getBurnoutCount() {
+        return burnoutCount;
+    }
+
+    /**
+     * Gets the accuracy percentage for the current race.
+     *
+     * @return accuracy percentage (0-100)
+     */
+    public double getRaceAccuracyPercentage() {
+        if (totalKeystrokes == 0) return 0.0;
+        return (correctKeystrokes * 100.0) / totalKeystrokes;
     }
 
 }

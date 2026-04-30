@@ -24,9 +24,11 @@ public class TypingRaceGUI extends JFrame
 {
     private ConfigurationPanel configPanel;
     private RacePanel racePanel;
+    private StatisticsPanel statsPanel;
     private CardLayout cardLayout;
     private JPanel cardPanel;
     private TypingRace currentRace;  // Reference to Part I TypingRace instance
+    private StatisticsManager statsManager;
 
     /**
      * Constructor for TypingRaceGUI.
@@ -39,6 +41,8 @@ public class TypingRaceGUI extends JFrame
         setLocationRelativeTo(null);
         setResizable(true);
 
+        statsManager = new StatisticsManager();
+
         // Create card layout for switching between configuration and race panels
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
@@ -46,12 +50,25 @@ public class TypingRaceGUI extends JFrame
         // Create configuration panel
         configPanel = new ConfigurationPanel();
         configPanel.addStartButtonListener(e -> startRace());
+        configPanel.addViewStatsButtonListener(e -> showStatistics());
         cardPanel.add(configPanel, "config");
+
+        // Create statistics panel
+        statsPanel = new StatisticsPanel(statsManager, () -> cardLayout.show(cardPanel, "config"));
+        cardPanel.add(statsPanel, "stats");
 
         // Add card panel to frame
         add(cardPanel);
 
         setVisible(true);
+    }
+
+    /**
+     * Shows the statistics panel.
+     */
+    private void showStatistics()
+    {
+        cardLayout.show(cardPanel, "stats");
     }
 
     /**
@@ -78,37 +95,46 @@ public class TypingRaceGUI extends JFrame
 
         // STEP 4: Create RacePanel to display the Part I Typist objects
         racePanel = new RacePanel(config.getPassage().getText(), typists);
-        cardPanel.add(racePanel, "race");
+        JScrollPane raceScrollPane = new JScrollPane(racePanel);
+        raceScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        raceScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        cardPanel.add(raceScrollPane, "race");
         cardLayout.show(cardPanel, "race");
 
         // Display customization info for each typist
         displayCustomizationInfo(typists);
 
         // STEP 5: Run Part I's TypingRace on background thread
-        SwingWorker<Typist, Void> worker = new SwingWorker<Typist, Void>()
+        SwingWorker<ArrayList<RaceResult>, Void> worker = new SwingWorker<ArrayList<RaceResult>, Void>()
         {
             @Override
-            protected Typist doInBackground() throws Exception
+            protected ArrayList<RaceResult> doInBackground() throws Exception
             {
-                // This runs Part I's simulation logic
-                currentRace.startRace();
-
-                // Find and return the winner from Part I's typists
-                for (Typist t : typists) {
-                    if (t.getProgress() >= config.getPassage().getLength()) {
-                        return t;
-                    }
-                }
-                return null;
+                // This runs Part I's simulation logic and returns results
+                return currentRace.startRace();
             }
 
             @Override
             protected void done()
             {
                 try {
-                    Typist winner = get();
-                    if (winner != null) {
-                        showWinner(winner);
+                    ArrayList<RaceResult> results = get();
+                    if (results != null && !results.isEmpty()) {
+                        // Save results to statistics
+                        for (RaceResult result : results) {
+                            statsManager.addRaceResult(result.getTypistName(), result);
+                        }
+                        
+                        // Find winner from results
+                        RaceResult winnerResult = results.stream()
+                            .filter(r -> r.getPosition() == 1)
+                            .findFirst()
+                            .orElse(null);
+                            
+                        if (winnerResult != null) {
+                            Typist winner = getTypistByName(winnerResult.getTypistName());
+                            showWinner(winner, results);
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -192,25 +218,44 @@ public class TypingRaceGUI extends JFrame
      * Shows winner announcement and prompts for new race.
      *
      * @param winner the winning Typist (Part I object)
+     * @param results the race results for all typists
      */
-    private void showWinner(Typist winner)
+    private void showWinner(Typist winner, ArrayList<RaceResult> results)
     {
-        String message = "🏆 " + winner.getName() + " wins the race!\n\n" +
-                         "Final Accuracy: " + String.format("%.2f", winner.getAccuracy());
-
-        int result = JOptionPane.showConfirmDialog(this,
-            message + "\n\nStart a new race?",
-            "Race Winner",
-            JOptionPane.YES_NO_OPTION);
-
-        if (result == JOptionPane.YES_OPTION) {
-            // Reset to configuration panel
-            cardPanel.removeAll();
-            configPanel = new ConfigurationPanel();
-            configPanel.addStartButtonListener(e -> startRace());
-            cardPanel.add(configPanel, "config");
-            cardLayout.show(cardPanel, "config");
+        StringBuilder message = new StringBuilder();
+        message.append("🏆 ").append(winner.getName()).append(" wins the race!\n\n");
+        message.append("Final Accuracy: ").append(String.format("%.2f", winner.getAccuracy())).append("\n\n");
+        message.append("=== RACE RESULTS ===\n");
+        
+        for (RaceResult result : results) {
+            message.append(result.getSummary()).append("\n");
         }
+
+        int option = JOptionPane.showConfirmDialog(this, message.toString(),
+            "Race Complete", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+        if (option == JOptionPane.OK_OPTION) {
+            // Return to configuration
+            cardLayout.show(cardPanel, "config");
+            racePanel = null;
+            currentRace = null;
+        }
+    }
+
+    /**
+     * Gets a typist by name from the current race.
+     *
+     * @param name the typist name
+     * @return the Typist object, or null if not found
+     */
+    private Typist getTypistByName(String name) {
+        if (currentRace == null) return null;
+        for (Typist t : currentRace.getTypists()) {
+            if (t != null && t.getName().equals(name)) {
+                return t;
+            }
+        }
+        return null;
     }
 
     /**

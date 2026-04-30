@@ -21,6 +21,7 @@ public class ConfigurationPanel extends JPanel
     private JCheckBox nightShiftCheckbox;
     private JButton startButton;
     private JButton customizeButton;
+    private JButton viewStatsButton;
     private RaceConfiguration config;
     private TypistCustomizationPanel[] customizationPanels;
 
@@ -216,6 +217,13 @@ public class ConfigurationPanel extends JPanel
         customizeButton.addActionListener(e -> showCustomizationDialog());
         panel.add(customizeButton);
 
+        viewStatsButton = new JButton("View Statistics");
+        viewStatsButton.setFont(new Font("Arial", Font.BOLD, 12));
+        viewStatsButton.setPreferredSize(new Dimension(130, 40));
+        viewStatsButton.setBackground(new Color(34, 139, 34));
+        viewStatsButton.setForeground(Color.WHITE);
+        panel.add(viewStatsButton);
+
         startButton = new JButton("Start Race");
         startButton.setFont(new Font("Arial", Font.BOLD, 14));
         startButton.setPreferredSize(new Dimension(120, 40));
@@ -251,6 +259,16 @@ public class ConfigurationPanel extends JPanel
     public void addStartButtonListener(ActionListener listener)
     {
         startButton.addActionListener(listener);
+    }
+
+    /**
+     * Adds an action listener to the view stats button.
+     *
+     * @param listener the ActionListener
+     */
+    public void addViewStatsButtonListener(ActionListener listener)
+    {
+        viewStatsButton.addActionListener(listener);
     }
 
     /**

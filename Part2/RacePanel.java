@@ -16,7 +16,7 @@ public class RacePanel extends JPanel
     private String passage;
     private ArrayList<Typist> typists;
     private static final int PADDING = 20;
-    private static final int LANE_HEIGHT = 70;
+    private static final int MIN_LANE_HEIGHT = 45;
     private static final int CHAR_WIDTH = 8;
 
     /**
@@ -30,7 +30,7 @@ public class RacePanel extends JPanel
         this.passage = passage;
         this.typists = typists;
         setBackground(new Color(245, 245, 245));
-        setPreferredSize(new Dimension(900, PADDING * 2 + LANE_HEIGHT * typists.size() + 40));
+        setPreferredSize(new Dimension(900, PADDING * 2 + MIN_LANE_HEIGHT * typists.size() + 80));
     }
 
     /**
@@ -63,8 +63,8 @@ public class RacePanel extends JPanel
 
         // Draw each typist's lane using Part I Typist data
         for (Typist typist : typists) {
-            drawLane(g2, typist, y);
-            y += LANE_HEIGHT;
+            y += drawLane(g2, typist, y);
+            y += 10;
         }
     }
 
@@ -74,24 +74,30 @@ public class RacePanel extends JPanel
      * @param g2 the Graphics2D object
      * @param typist the Part I Typist object
      * @param y the y-coordinate
+     * @return total height used by this lane
      */
-    private void drawLane(Graphics2D g2, Typist typist, int y)
+    private int drawLane(Graphics2D g2, Typist typist, int y)
     {
         int x = PADDING;
         int laneWidth = getWidth() - 2 * PADDING;
 
+        g2.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        FontMetrics metrics = g2.getFontMetrics();
+        int lineHeight = metrics.getHeight();
+        int lineWidth = laneWidth - 10;
+        int maxCharsPerLine = Math.max(1, lineWidth / CHAR_WIDTH);
+        int totalLines = (passage.length() + maxCharsPerLine - 1) / maxCharsPerLine;
+        int laneHeight = Math.max(MIN_LANE_HEIGHT, totalLines * lineHeight + 10);
+
         // Draw background lane
         g2.setColor(new Color(220, 220, 220));
-        g2.fillRect(x, y, laneWidth, 45);
+        g2.fillRect(x, y, laneWidth, laneHeight);
         g2.setColor(new Color(100, 100, 100));
         g2.setStroke(new BasicStroke(1.0f));
-        g2.drawRect(x, y, laneWidth, 45);
+        g2.drawRect(x, y, laneWidth, laneHeight);
 
-        // Draw passage text with progress highlighting
-        g2.setFont(new Font("Monospaced", Font.PLAIN, 12));
         int textX = x + 5;
-        int textY = y + 28;
-
+        int textY = y + lineHeight;
         int progress = typist.getProgress();
 
         // Get custom color from customization if available
@@ -99,7 +105,6 @@ public class RacePanel extends JPanel
         Color cursorColor = new Color(33, 150, 243);   // Default blue
         if (typist.getCustomization() != null) {
             progressColor = typist.getCustomization().getBarColor();
-            // Create a darker version for cursor
             int r = Math.max(progressColor.getRed() - 50, 0);
             int g = Math.max(progressColor.getGreen() - 50, 0);
             int b = Math.max(progressColor.getBlue() - 50, 0);
@@ -107,30 +112,29 @@ public class RacePanel extends JPanel
         }
 
         for (int i = 0; i < passage.length(); i++) {
+            if (i > 0 && i % maxCharsPerLine == 0) {
+                textX = x + 5;
+                textY += lineHeight;
+            }
+
             char c = passage.charAt(i);
 
-            // Completed characters in custom color
             if (i < progress) {
                 g2.setColor(progressColor);
-                g2.fillRect(textX, textY - 12, CHAR_WIDTH, 16);
+                g2.fillRect(textX, textY - lineHeight + 3, CHAR_WIDTH, lineHeight - 2);
                 g2.setColor(Color.WHITE);
-            }
-            // Current character (cursor) in darker version of color
-            else if (i == progress) {
+            } else if (i == progress) {
                 g2.setColor(cursorColor);
-                g2.fillRect(textX, textY - 12, CHAR_WIDTH, 16);
+                g2.fillRect(textX, textY - lineHeight + 3, CHAR_WIDTH, lineHeight - 2);
                 g2.setColor(Color.WHITE);
-            }
-            // Future characters in black
-            else {
+            } else {
                 g2.setColor(Color.BLACK);
             }
 
-            g2.drawString(String.valueOf(c), textX + 2, textY);
+            g2.drawString(String.valueOf(c), textX, textY);
             textX += CHAR_WIDTH;
         }
 
-        // Draw typist info below lane with custom symbol
         g2.setFont(new Font("Arial", Font.PLAIN, 10));
         g2.setColor(Color.BLACK);
 
@@ -140,12 +144,15 @@ public class RacePanel extends JPanel
 
         if (typist.isBurntOut()) {
             info += " [BURNT OUT - " + typist.getBurnoutTurnsRemaining() + " turns left]";
-            g2.setColor(new Color(255, 69, 0));  // Orange-red
+            g2.setColor(new Color(255, 69, 0));
         } else if (typist.justMistyped()) {
             info += " [MISTYPED]";
-            g2.setColor(new Color(244, 67, 54));  // Red
+            g2.setColor(new Color(244, 67, 54));
         }
 
-        g2.drawString(info, PADDING, y + 62);
+        int infoY = y + laneHeight + 15;
+        g2.drawString(info, x, infoY);
+
+        return laneHeight + 25;
     }
 }
