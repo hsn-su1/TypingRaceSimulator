@@ -308,12 +308,20 @@ public class TypingRaceGUI extends JFrame
     }
 
     /**
+     * Starts the graphical typing race application.
+     * This method is provided as a minimal external entry point.
+     */
+    public static void startRaceGUI() {
+        SwingUtilities.invokeLater(TypingRaceGUI::new);
+    }
+
+    /**
      * Main method to launch the application.
      *
      * @param args command line arguments (unused)
      */
     public static void main(String[] args)
     {
-        SwingUtilities.invokeLater(TypingRaceGUI::new);
+        startRaceGUI();
     }
 }
